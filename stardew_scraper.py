@@ -28,7 +28,7 @@ class Room:
     def print_csv(self, file):
         for b in self.bundles:
             for i in b.items:
-                file.write(self.name+","+b.name+",,"+str(b.num_needed)+",,"+i.name+","+str(i.amount)+","+str(i.spring)+","+str(i.summer)+","+str(i.fall)+","+str(i.winter)+","+i.description+"\n")
+                file.write(self.name+","+b.name+",,"+str(b.num_needed)+",,"+i.name+","+str(i.amount)+","+str(int(i.spring))+","+str(int(i.summer))+","+str(int(i.fall))+","+str(int(i.winter))+","+i.description+"\n")
 
     def __str__(self):
         string = self.name + "\n"
@@ -44,13 +44,6 @@ class Bundle:
         self.name = name
         self.num_needed = num_needed
         self.items = items
-
-    def print_csv(self, file):
-        file.write(self.name + ",," + str(self.num_needed) + ",,")
-        self.items[0].print_csv(file)
-        for i in self.items[1:]:
-            file.write(",,,,,")
-            i.print_csv(file)
 
     def __str__(self):
         string = self.name + ": " + str(self.num_needed) + "\n"
@@ -70,16 +63,6 @@ class Item:
         self.winter = winter
         self.description = description
         self.amount = amount
-
-    def print_csv(self, file):
-        file.write(self.name+","
-                   +str(self.amount)+","
-                   +str(self.spring)+","
-                   +str(self.summer)+","
-                   +str(self.fall)+","
-                   +str(self.winter)+","
-                   +self.description+","
-                   +"\n")
 
 
 
