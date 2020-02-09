@@ -1,4 +1,5 @@
 from pywikiapi import *
+import sys
 
 
 
@@ -84,13 +85,11 @@ def create_room(num, wikitext, site):
     end_index = wikitext.index(SECTION_STR, start_index)
     
     section_name = wikitext[start_index:end_index]
-
+    if print_flag: print("Creating Room: " + section_name)
     # Get section text
     section_end = wikitext.index(SECTION_STR, end_index + 2)
     section_text = wikitext[end_index+2:section_end]
-    #print(section_name + "\n")
     bundle_list = read_bundles(section_text, site)
-    #print("\n")
     return Room(section_name, bundle_list)
 
 
@@ -107,7 +106,6 @@ def read_bundles(section_text, site):
         end_index = section_text.index(TABLE_END, table_index) + 2
         
         table_text = section_text[table_index:end_index]
-        #print(table_text)
         # Get table name
         try:
             id_index = table_text.index("id=") + 4
@@ -115,9 +113,9 @@ def read_bundles(section_text, site):
             continue
         id_end = table_text.index("\"", id_index)
         id_text = table_text[id_index:id_end]
+        if print_flag: print("Creating Bundle: " + id_text)
         # Get number of slots
         num_slots = table_text.count(SLOT_IMAGE)
-        #print(id_text + ": " + str(num_slots))
         # Get items
         item_list = read_items(table_text, site)
         bundle_list.append(Bundle(id_text, num_slots, item_list))
@@ -141,10 +139,8 @@ def read_items(table_text, site):
         except:
             pass
         item_name = table_text[name_start:name_end]
+        if print_flag: print("Creating item: " + item_name)
         item_list.append(get_item_info(item_name, site))
-        
-        #item_list.append(item_name)
-        #item_list.append(Item(item_name, """"""))
 
         start_row = end_row
     return item_list
@@ -154,12 +150,12 @@ def read_items(table_text, site):
 def get_item_info(item_name, site):
     page_name = item_name
     while True:
-        #print("Querying: " + page_name)
+        if print_flag: print("Querying: " + page_name)
         response = site(action="parse", page=page_name, prop=["wikitext"])
         wikitext = response["parse"]["wikitext"]
         if not wikitext.startswith(REDIRECT):
             break
-        #print(page_name + " " + wikitext)
+        if print_flag: print(page_name + " " + wikitext)
         start_index = wikitext.index("[[") + 2
         end_index = wikitext.index("]]")
         page_name = wikitext[start_index:end_index]
@@ -208,11 +204,14 @@ def get_info_box_end(wikitext):
         
 
 def main():
+    global print_flag
+    print_flag = (True if ("-printout") in sys.argv else False)
+    
     site = Site("https://stardewvalleywiki.com/mediawiki/api.php")
 
     response = site(action="parse", page="Bundles", prop=["wikitext"])
 
-    #print(list(response['parse']))
+    if print_flag: print("Querying Bundles")
 
     # Uncomment to save xml to a file 
     """fname = "Bundles.txt"
@@ -220,6 +219,7 @@ def main():
         f.write(response["parse"]["wikitext"])"""
 
     room_list = get_rooms(response["parse"]["wikitext"], site)
+    if print_flag: print("Generating csv...")
     stardew_csv = open("community_center.csv", "w")
     stardew_csv.write("Room,Bundle,Completed,Amount Needed,Have Item,Item,Amount,Spring,Summer,Fall,Winter,Description\n")
     for room in room_list:
@@ -230,5 +230,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-    print("Finished")
-    input()
+    print("Finished!")
